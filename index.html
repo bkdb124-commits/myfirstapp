@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>봄 · 서시</title>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #fce4ec 0%, #fdf6e3 40%, #e8f5e9 70%, #fce4ec 100%);
+    overflow: hidden;
+    font-family: 'Gaegu', cursive;
+    position: relative;
+  }
+
+  /* 배경 원형 광원 */
+  .glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .glow-1 { width: 500px; height: 500px; background: #f8bbd0; top: -100px; left: -100px; animation: drift1 12s ease-in-out infinite alternate; }
+  .glow-2 { width: 400px; height: 400px; background: #fff9c4; top: 30%; right: -80px; animation: drift2 15s ease-in-out infinite alternate; }
+  .glow-3 { width: 350px; height: 350px; background: #c8e6c9; bottom: -60px; left: 30%; animation: drift3 10s ease-in-out infinite alternate; }
+
+  @keyframes drift1 { from { transform: translate(0,0); } to { transform: translate(60px, 40px); } }
+  @keyframes drift2 { from { transform: translate(0,0); } to { transform: translate(-40px, 60px); } }
+  @keyframes drift3 { from { transform: translate(0,0); } to { transform: translate(30px, -50px); } }
+
+  /* 꽃잎 캔버스 */
+  canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 1; }
+
+  /* 중앙 시 */
+  .poem-container {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: center;
+    animation: fadeInUp 2s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translate(-50%, -40%); }
+    to   { opacity: 1; transform: translate(-50%, -50%); }
+  }
+
+  .poem-title {
+    font-family: 'Gaegu', cursive;
+    font-size: 1rem;
+    color: #c2788a;
+    letter-spacing: 0.4em;
+    margin-bottom: 2rem;
+    font-weight: 400;
+  }
+
+  .poem-text {
+    font-family: 'Nanum Pen Script', cursive;
+    font-size: clamp(1.6rem, 3.8vw, 2.4rem);
+    line-height: 2.4;
+    color: #5c3d4e;
+    text-shadow: 0 2px 20px rgba(255,255,255,0.8), 0 0 40px rgba(248,187,208,0.5);
+    letter-spacing: 0.05em;
+  }
+
+  .poem-text span {
+    display: block;
+    animation: lineReveal 0.8s ease forwards;
+    opacity: 0;
+  }
+  .poem-text span:nth-child(1) { animation-delay: 0.8s; }
+  .poem-text span:nth-child(2) { animation-delay: 1.3s; }
+  .poem-text span:nth-child(3) { animation-delay: 1.8s; }
+  .poem-text span:nth-child(4) { animation-delay: 2.3s; }
+
+  @keyframes lineReveal {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .poem-author {
+    font-family: 'Gaegu', cursive;
+    font-size: 0.9rem;
+    color: #b07a8a;
+    margin-top: 2rem;
+    letter-spacing: 0.3em;
+    animation: lineReveal 0.8s ease forwards;
+    animation-delay: 3s;
+    opacity: 0;
+  }
+
+  /* 카드 배경 */
+  .poem-card {
+    background: rgba(255,255,255,0.35);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 24px;
+    padding: 3.5rem 4rem;
+    box-shadow: 0 8px 60px rgba(192,120,138,0.15), 0 2px 12px rgba(255,255,255,0.5) inset;
+  }
+
+  /* 장식 꽃 */
+  .deco {
+    position: fixed;
+    font-size: 2rem;
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 2;
+    animation: floatDeco 6s ease-in-out infinite;
+  }
+  .deco:nth-child(1) { top: 8%; left: 5%; animation-delay: 0s; }
+  .deco:nth-child(2) { top: 15%; right: 8%; animation-delay: 1s; font-size: 1.4rem; }
+  .deco:nth-child(3) { bottom: 12%; left: 10%; animation-delay: 2s; font-size: 1.6rem; }
+  .deco:nth-child(4) { bottom: 18%; right: 6%; animation-delay: 0.5s; }
+
+  @keyframes floatDeco {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(10deg); }
+  }
+
+  /* 음악 버튼 */
+  #music-btn {
+    position: fixed;
+    bottom: 1.8rem;
+    right: 1.8rem;
+    z-index: 20;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    cursor: pointer;
+    font-size: 1.4rem;
+    box-shadow: 0 4px 20px rgba(192,120,138,0.2);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  #music-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 28px rgba(192,120,138,0.35);
+  }
+  #music-btn.playing { animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(192,120,138,0.2); }
+    50% { box-shadow: 0 4px 28px rgba(192,120,138,0.5); }
+  }
+</style>
+</head>
+<body>
+
+<!-- 배경음악 -->
+<audio id="bgm" loop>
+  <source src="dg.mp3" type="audio/mpeg">
+</audio>
+<button id="music-btn" title="음악 재생/정지">🎵</button>
+
+<!-- 배경 광원 -->
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="glow glow-3"></div>
+
+<!-- 장식 -->
+<div class="deco">🌸</div>
+<div class="deco">🌷</div>
+<div class="deco">🌼</div>
+<div class="deco">🌺</div>
+
+<!-- 꽃잎 캔버스 -->
+<canvas id="petals"></canvas>
+
+<!-- 시 -->
+<div class="poem-container">
+  <div class="poem-card">
+    <div class="poem-title">모란이 피기까지는</div>
+    <div class="poem-text">
+      <span>모란이 피기까지는</span>
+      <span>나는 아직 나의 봄을 기다리고 있을 테요</span>
+      <span>모란이 뚝뚝 떨어져 버린 날</span>
+      <span>나는 비로소 봄을 여읜 설움에 잠길 테요</span>
+    </div>
+    <div class="poem-author">— 김영랑</div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('petals');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+const COLORS = [
+  '#f8bbd0', '#f48fb1', '#fce4ec',
+  '#fff9c4', '#ffe082',
+  '#c8e6c9', '#a5d6a7',
+  '#ffccbc', '#ffab91',
+  '#ffffff',
+];
+
+class Petal {
+  constructor() { this.reset(true); }
+
+  reset(init = false) {
+    this.x = Math.random() * canvas.width;
+    this.y = init ? Math.random() * canvas.height * -1 : -30;
+    this.size = Math.random() * 14 + 7;
+    this.speedY = Math.random() * 1.2 + 0.4;
+    this.speedX = (Math.random() - 0.5) * 0.8;
+    this.angle = Math.random() * Math.PI * 2;
+    this.angleSpeed = (Math.random() - 0.5) * 0.04;
+    this.opacity = Math.random() * 0.5 + 0.4;
+    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    this.swing = Math.random() * 2;
+    this.swingSpeed = Math.random() * 0.02 + 0.01;
+    this.swingOffset = Math.random() * Math.PI * 2;
+    this.type = Math.floor(Math.random() * 3); // 0: oval, 1: teardrop, 2: heart-petal
+  }
+
+  update(t) {
+    this.y += this.speedY;
+    this.x += this.speedX + Math.sin(t * this.swingSpeed + this.swingOffset) * this.swing;
+    this.angle += this.angleSpeed;
+    if (this.y > canvas.height + 40) this.reset();
+  }
+
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+    ctx.globalAlpha = this.opacity;
+    ctx.fillStyle = this.color;
+
+    if (this.type === 0) {
+      // 타원형 꽃잎
+      ctx.beginPath();
+      ctx.ellipse(0, 0, this.size * 0.5, this.size, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (this.type === 1) {
+      // 물방울 꽃잎
+      ctx.beginPath();
+      ctx.moveTo(0, -this.size);
+      ctx.bezierCurveTo(this.size * 0.8, -this.size * 0.3, this.size * 0.6, this.size * 0.6, 0, this.size * 0.4);
+      ctx.bezierCurveTo(-this.size * 0.6, this.size * 0.6, -this.size * 0.8, -this.size * 0.3, 0, -this.size);
+      ctx.fill();
+    } else {
+      // 작은 원형 꽃잎
+      ctx.beginPath();
+      ctx.arc(0, 0, this.size * 0.55, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // 광택
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.ellipse(-this.size * 0.15, -this.size * 0.2, this.size * 0.18, this.size * 0.1, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
+const petals = Array.from({ length: 80 }, () => new Petal());
+let t = 0;
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  t++;
+  petals.forEach(p => { p.update(t); p.draw(); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+// 음악 버튼
+const bgm = document.getElementById('bgm');
+const btn = document.getElementById('music-btn');
+btn.addEventListener('click', () => {
+  if (bgm.paused) {
+    bgm.play();
+    btn.textContent = '🔊';
+    btn.classList.add('playing');
+  } else {
+    bgm.pause();
+    btn.textContent = '🎵';
+    btn.classList.remove('playing');
+  }
+});
+</script>
+</body>
+</html>
